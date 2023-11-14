@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <title>CSE 478 Project - Fall 2023</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" />
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="js/main.js"></script>
+        <style>
+            svg {    
+                border:1px solid gray;
+                width:800px;
+                height:400px;
+                }
+                input {
+                width:100%;
+                margin-bottom:5px;
+            }
+            .row {
+                margin-top:30px;
+            }
+
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="text-center">CSE 478 Project - Fall 2023</h1>
+            <h3 class="text-center">Project Charts</h3>
+
+            <div class='row'>
+                <div class='col-md-8 col-sm-12'>
+                    <svg id='svg1'></svg>
+                </div>
+                <div class='col-md-12 col-sm-12'>
+                    <svg id='svg2'></svg>
+                </div>
+                <div class='col-md-12 col-sm-12'>
+                    <svg id='svg3'></svg>
+                </div>
+                <div class='col-md-12 col-sm-12'>
+                    <svg id='svg4'></svg>
+                </div>
+                <div class='col-md-12 col-sm-12'>
+                    <svg id='svg5'></svg>
+                </div>
+            </div>
+
+            <script>
+                d3.csv("Palestine Body Count.csv").then(function (data) {
+  const selectedYear = 2020;
+
+  const filteredData = data.filter((item) => item.Year == selectedYear);
+
+  const totalPalestiniansKilled = d3.sum(filteredData, (d) => +d["Palestinians Killed"]);
+  const totalIsraelisKilled = d3.sum(filteredData, (d) => +d["Israelis Killed"]);
+
+  console.log(filteredData);
+  console.log(totalPalestiniansKilled);
+  console.log(totalIsraelisKilled);
+
+
+  const yearlySums = {};
+
+  data.forEach(function (item) {
+    const year = item.Year;
+    const palestiniansKilled = +item["Palestinians Killed"];
+    const israelisKilled = +item["Israelis Killed"];
+
+    if (!yearlySums[year]) {
+      yearlySums[year] = { PalestiniansKilled: 0, IsraelisKilled: 0 };
+    }
+
+    yearlySums[year].PalestiniansKilled += palestiniansKilled;
+    yearlySums[year].IsraelisKilled += israelisKilled;
+  });
+
+  console.log(yearlySums);
+
+
+  const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+  const width = 600 - margin.left - margin.right;
+  const height = 400 - margin.top - margin.bottom;
+
+  svg1 = d3
+    .select("#svg1")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const years = Object.keys(yearlySums);
+
+  const x = d3.scaleBand()
+    .domain(years)
+    .range([0, width])
+    .padding(0.1);
+
+  const y = d3.scaleLinear()
+    .domain([0, d3.max(years, year => Math.max(yearlySums[year].PalestiniansKilled, yearlySums[year].IsraelisKilled))])
+    .nice()
+    .range([height, 0]);
+
+  const color = d3.scaleOrdinal()
+    .domain(["Palestinians", "Israelis"])
+    .range(["purple", "blue"]);
+
+  const barWidth = x.bandwidth() / 2;
+
+  years.forEach(year => {
+    svg1.append("rect")
+      .attr("x", x(year))
+      .attr("y", y(yearlySums[year].PalestiniansKilled))
+      .attr("width", barWidth)
+      .attr("height", height - y(yearlySums[year].PalestiniansKilled))
+      .attr("fill", color("Palestinians"));
+
+    svg1.append("rect")
+      .attr("x", x(year) + barWidth)
+      .attr("y", y(yearlySums[year].IsraelisKilled))
+      .attr("width", barWidth)
+      .attr("height", height - y(yearlySums[year].IsraelisKilled))
+      .attr("fill", color("Israelis"));
+  });
+
+  svg1.append("g")
+    .attr("transform", `translate(0, ${height})`)
+    .call(d3.axisBottom(x));
+
+  svg1.append("g")
+    .call(d3.axisLeft(y));
+
+  const legend = svg1.append("g")
+    .attr("transform", `translate(${width - 100}, 10)`);
+
+  legend.append("rect")
+    .attr("width", 15)
+    .attr("height", 15)
+    .attr("fill", color("Palestinians"));
+
+  legend.append("text")
+    .attr("x", 20)
+    .attr("y", 10)
+    .attr("dy", "0.75em")
+    .text("Palestinians");
+
+  legend.append("rect")
+    .attr("width", 15)
+    .attr("height", 15)
+    .attr("y", 20)
+    .attr("fill", color("Israelis"));
+
+  legend.append("text")
+    .attr("x", 20)
+    .attr("y", 30)
+    .attr("dy", "0.75em")
+    .text("Israelis");
+
+});
+
+
+            </script>
+            <script>
+                d3.csv("Palestine Body Count.csv").then(function (data) {
+  const selectedYear = 2020;
+
+  const filteredData = data.filter((item) => item.Year == selectedYear);
+
+  const totalPalestiniansKilled = d3.sum(filteredData, (d) => +d["Palestinians Killed"]);
+  const totalIsraelisKilled = d3.sum(filteredData, (d) => +d["Israelis Killed"]);
+
+  const yearlySums = {};
+
+  data.forEach(function (item) {
+    const year = item.Year;
+    const palestiniansKilled = +item["Palestinians Killed"];
+    const israelisKilled = +item["Israelis Killed"];
+
+    if (!yearlySums[year]) {
+      yearlySums[year] = { PalestiniansKilled: 0, IsraelisKilled: 0 };
+    }
+
+    yearlySums[year].PalestiniansKilled += palestiniansKilled;
+    yearlySums[year].IsraelisKilled += israelisKilled;
+  });
+
+  console.log(yearlySums);
+
+  const years = Object.keys(yearlySums);
+
+  const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+  const width = 600 - margin.left - margin.right;
+  const height = 400 - margin.top - margin.bottom;
+
+  const dataPointsPalestinians = years.map(year => ({
+    year: year,
+    deaths: yearlySums[year].PalestiniansKilled,
+    group: "Palestinians",
+  }));
+
+  const dataPointsIsraelis = years.map(year => ({
+    year: year,
+    deaths: yearlySums[year].IsraelisKilled,
+    group: "Israelis",
+  }));
+
+  const dataPoints = [...dataPointsPalestinians, ...dataPointsIsraelis];
+
+  const xScale = d3.scaleBand().domain(years).range([0, width]);
+  const maxDeaths = d3.max(dataPoints, d => d.deaths);
+
+  const yScale = d3.scaleLinear()
+    .domain([0, maxDeaths])
+    .nice()
+    .range([height, 0]);
+
+  const colorScale = d3.scaleOrdinal().domain(["Palestinians", "Israelis"]).range(["purple", "blue"]);
+
+  const line = d3.line()
+    .x(d => xScale(d.year) + xScale.bandwidth() / 2)
+    .y(d => yScale(d.deaths));
+
+  const svg2 = d3.select("#svg2");
+  const path = svg2.selectAll("path")
+    .data(["Palestinians", "Israelis"])
+    .enter()
+    .append("path")
+    .attr("d", d => line(dataPoints.filter(p => p.group === d)))
+    .attr("stroke", d => colorScale(d))
+    .attr("stroke-width", 2)
+    .attr("fill", "none")
+    .attr("transform", "translate(50, 20)");
+
+  svg2.append("g")
+    .attr("transform", `translate(50, 360)`)
+    .call(d3.axisBottom(xScale));
+    const yAxis = d3.axisLeft(yScale);
+  
+  svg2.append("g")
+    .attr("transform", `translate(50, 20)`)
+    .call(yAxis);
+
+  const legend = svg2.append("g")
+    .attr("transform", `translate(${width - 100}, 10)`);
+
+  legend.append("rect")
+    .attr("width", 15)
+    .attr("height", 15)
+    .attr("fill", colorScale("Palestinians"));
+
+  legend.append("text")
+    .attr("x", 20)
+    .attr("y", 10)
+    .attr("dy", "0.75em")
+    .text("Palestinians");
+
+  legend.append("rect")
+    .attr("width", 15)
+    .attr("height", 15)
+    .attr("y", 20)
+    .attr("fill", colorScale("Israelis"));
+
+  legend.append("text")
+    .attr("x", 20)
+    .attr("y", 30)
+    .attr("dy", "0.75em")
+    .text("Israelis");
+
+
+
+    const donutWidth = 40;
+    const radius = 75;
+
+const arc = d3.arc()
+  .innerRadius(radius - donutWidth)
+  .outerRadius(radius);
+
+const svg3 = d3.select("#svg3")
+  .append("svg")
+  .attr("width", 800)
+  .attr("height", 400);
+
+function createDonutChart(yearData, year, offset) {
+  const g = svg3.append("g")
+    .attr("transform", `translate(${130 + offset},200)`);
+
+  const pie = d3.pie()
+    .sort(null)
+    .value(d => d.deaths);
+
+  const gArc = g.selectAll(".arc")
+    .data(pie(yearData))
+    .enter()
+    .append("g")
+    .attr("class", "arc");
+
+  gArc.append("path")
+    .attr("d", arc)
+    .attr("fill", d => colorScale(d.data.group));
+
+  gArc.append("text")
+    .attr("transform", d => `translate(${arc.centroid(d)})`)
+    .attr("dy", ".35em")
+    .style("text-anchor", "middle")
+    .text(d => d.data.group);
+
+  g.append("text")
+    .attr("dy", ".35em")
+    .style("text-anchor", "middle")
+    .text(year);
+}
+
+const offsetPerChart = 175;
+years.forEach((year, index) => {
+  const yearData = dataPoints.filter(d => d.year === year);
+  createDonutChart(yearData, year, index * offsetPerChart);
+});
+});
+            </script>
+            <script>
+                d3.csv("Area_Population.csv").then(function (data) {
+  const selectedYear = 2023;
+
+  const filteredData = data.filter((item) => item.Year == selectedYear);
+
+  const totalMuslims = d3.sum(filteredData, (d) => +d["Muslims"]);
+  const totalJews = d3.sum(filteredData, (d) => +d["Jews"]);
+  const totalOther = d3.sum(filteredData, (d) => +d["Other"]);
+
+  const yearlySums = {};
+
+  data.forEach(function (item) {
+    const year = item.Year;
+    const totalM = +item["Muslims"];
+    const totalJ = +item["Jews"];
+    const totalO = +item["Other"];
+
+    if (!yearlySums[year]) {
+      yearlySums[year] = { Muslims: 0, Jews: 0, Other: 0};
+    }
+
+    yearlySums[year].Muslims += totalM;
+    yearlySums[year].Jews += totalJ;
+    yearlySums[year].Other += totalO;
+  });
+
+  console.log(yearlySums);
+
+  const years = Object.keys(yearlySums);
+
+  const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+  const width = 600 - margin.left - margin.right;
+  const height = 400 - margin.top - margin.bottom;
+
+const dataPointsMuslims = years.map(year => ({
+    year: year,
+    pop: yearlySums[year].Muslims,
+    group: "Muslims",
+  }));
+
+  const dataPointsJews = years.map(year => ({
+    year: year,
+    pop: yearlySums[year].Jews,
+    group: "Jews",
+  }));
+
+  const dataPointsOther = years.map(year => ({
+    year: year,
+    pop: yearlySums[year].Other,
+    group: "Other",
+  }));
+
+  const dataPoints = [...dataPointsMuslims, ...dataPointsJews, ...dataPointsOther];
+
+  const xScale = d3.scaleBand().domain(years).range([0, width]);
+  const maxPop = d3.max(dataPoints, d => d.pop);
+
+  const yScale = d3.scaleLinear()
+    .domain([0, maxPop])
+    .nice()
+    .range([height, 0]);
+
+  const colorScale = d3.scaleOrdinal().domain(["Muslims", "Jews", "Other"]).range(["purple", "blue", "red"]);
+
+  const line = d3.line()
+    .x(d => xScale(d.year) + xScale.bandwidth() / 2)
+    .y(d => yScale(d.pop));
+
+  const svg4 = d3.select("#svg4");
+  const path = svg4.selectAll("path")
+    .data(["Muslims", "Jews", "Other"])
+    .enter()
+    .append("path")
+    .attr("d", d => line(dataPoints.filter(p => p.group === d)))
+    .attr("stroke", d => colorScale(d))
+    .attr("stroke-width", 2)
+    .attr("fill", "none")
+    .attr("transform", "translate(50, 20)");
+
+  svg4.append("g")
+    .attr("transform", `translate(50, 360)`)
+    .call(d3.axisBottom(xScale));
+    const yAxis = d3.axisLeft(yScale);
+  
+  svg4.append("g")
+    .attr("transform", `translate(55, 20)`)
+    .call(yAxis);
+
+  const legend = svg4.append("g")
+    .attr("transform", `translate(${width - 100}, 10)`);
+
+  legend.append("rect")
+    .attr("width", 15)
+    .attr("height", 15)
+    .attr("fill", colorScale("Muslims"));
+
+  legend.append("text")
+    .attr("x", 20)
+    .attr("y", 10)
+    .attr("dy", "0.75em")
+    .text("Muslims");
+
+  legend.append("rect")
+    .attr("width", 15)
+    .attr("height", 15)
+    .attr("y", 20)
+    .attr("fill", colorScale("Jews"));
+
+  legend.append("text")
+    .attr("x", 20)
+    .attr("y", 30)
+    .attr("dy", "0.75em")
+    .text("Jews");
+
+  legend.append("rect")
+    .attr("width", 15)
+    .attr("height", 15)
+    .attr("y", 40)
+    .attr("fill", colorScale("Other"));
+
+  legend.append("text")
+    .attr("x", 20)
+    .attr("y", 50)
+    .attr("dy", "0.75em")
+    .text("Other");
+                });
+            </script>
+            <script>
+                
+            </script>
+        </div> 
+    </body>
+</html> 
